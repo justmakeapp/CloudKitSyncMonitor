@@ -577,7 +577,7 @@ public class SyncMonitor: ObservableObject {
     // MARK: - Defining state -
 
     /// The state of a CloudKit import, export, or setup event as reported by an `NSPersistentCloudKitContainer` notification
-    public enum SyncState {
+    public enum SyncState: Equatable {
         /// No event has been reported
         case notStarted
 
@@ -621,6 +621,21 @@ public class SyncMonitor: ObservableObject {
                 return e
             }
             return nil
+        }
+        
+        public static func ==(lhs: SyncState, rhs: SyncState) -> Bool {
+            switch (lhs, rhs) {
+            case (.notStarted, .notStarted):
+                return true
+            case (.inProgress(let lhsStarted), .inProgress(let rhsStarted)):
+                return lhsStarted == rhsStarted
+            case (.succeeded(let lhsStarted, let lhsEnded), .succeeded(let rhsStarted, let rhsEnded)):
+                return lhsStarted == rhsStarted && lhsEnded == rhsEnded
+            case (.failed(let lhsStarted, let lhsEnded, let lhsError), .failed(let rhsStarted, let rhsEnded, let rhsError)):
+                return lhsStarted == rhsStarted && lhsEnded == rhsEnded && lhsError?.localizedDescription == rhsError?.localizedDescription
+            default:
+                return false
+            }
         }
     }
 }
